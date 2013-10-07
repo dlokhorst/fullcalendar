@@ -47,7 +47,7 @@ function ScheduleWeekView(element, calendar) {
       opt('titleFormat')
     );
 
-    renderSchedule(1, colCnt, false);
+    renderSchedule(colCnt, false);
   }
 
 }

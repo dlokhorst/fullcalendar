@@ -1,7 +1,7 @@
 
-// setDefaults({
-//   weekMode: 'fixed'
-// });
+setDefaults({
+  schedRowHeight: 20,
+});
 
 
 function ScheduleView(element, calendar, viewName) {
@@ -29,17 +29,18 @@ function ScheduleView(element, calendar, viewName) {
   t.colContentRight = colContentRight;
   t.getIsCellAllDay = function() { return true };
   t.allDayRow = allDayRow;
-  t.getRowCnt = function() { return rowCnt };
+  t.getRowCnt = function() { return 1 }; // "Row" means calendar-row
   t.getColCnt = function() { return colCnt };
   t.getColWidth = function() { return colWidth };
-  t.getDaySegmentContainer = function() { return daySegmentContainer };
+  t.getSegmentContainer = function() { return segmentContainer };
+  t.getUnits = function() { return units };
 
 
   // imports
   View.call(t, element, calendar, viewName);
   OverlayManager.call(t);
   SelectionManager.call(t);
-  DayEventRenderer.call(t);
+  ScheduleEventRenderer.call(t);
   var opt = t.opt;
   var trigger = t.trigger;
   var renderOverlay = t.renderOverlay;
@@ -62,14 +63,15 @@ function ScheduleView(element, calendar, viewName) {
   var bodyFirstCells;
   var firstRowCellInners;
   var firstRowCellContentInners;
-  var daySegmentContainer;
+  var segmentContainer;
 
   var viewWidth;
   var viewHeight;
   var colWidth;
   var weekNumberWidth;
 
-  var rowCnt, colCnt;
+  var unitCnt;
+  var colCnt;
   var showNumbers;
   var coordinateGrid;
   var hoverListener;
@@ -82,6 +84,7 @@ function ScheduleView(element, calendar, viewName) {
   var weekNumberTitle;
   var weekNumberFormat;
 
+  var units;
 
 
   /* Rendering
@@ -91,11 +94,11 @@ function ScheduleView(element, calendar, viewName) {
   disableTextSelection(element.addClass('fc-grid'));
 
 
-  function renderSchedule(_rowCnt, _colCnt, _showNumbers) {
-    rowCnt = _rowCnt;
+  function renderSchedule(_colCnt, _showNumbers) {
     colCnt = _colCnt;
     showNumbers = _showNumbers;
     updateOptions();
+    loadUnits();
 
     if (!body) {
       buildEventContainer();
@@ -103,7 +106,6 @@ function ScheduleView(element, calendar, viewName) {
 
     buildTable();
   }
-
 
   function updateOptions() {
     tm = opt('theme') ? 'ui' : 'fc';
@@ -121,8 +123,14 @@ function ScheduleView(element, calendar, viewName) {
   }
 
 
+  function loadUnits() {
+    units = opt('units');
+    unitCnt = units.length;
+  }
+
+
   function buildEventContainer() {
-    daySegmentContainer =
+    segmentContainer =
       $("<div class='fc-event-container' style='position:absolute;z-index:8;top:0;left:0'/>")
         .appendTo(element);
   }
@@ -167,12 +175,12 @@ function ScheduleView(element, calendar, viewName) {
   -----------------------------------------------------------*/
 
   function renderEvents(events, modifiedEventId) {
-    t.renderDayEvents(events, modifiedEventId);
+    t.renderScheduleEvents(events, modifiedEventId);
   }
 
 
   function clearEvents() {
-    t.getDaySegmentContainer().empty();
+    segmentContainer.empty();
   }
 
 
@@ -227,26 +235,18 @@ function ScheduleView(element, calendar, viewName) {
     var row;
     var col;
     var date;
+    var unit;
 
     html += "<tbody>";
 
-    for (row=0; row<rowCnt; row++) {
+    for (row=0; row<unitCnt; row++) {
+      unit_id = (row+1).toString(); // TODO
 
-      html += "<tr class='fc-week'>";
-
-      if (showWeekNumbers) {
-        date = cellToDate(row, 0);
-        html +=
-          "<td class='fc-week-number " + contentClass + "'>" +
-          "<div>" +
-          htmlEscape(formatDate(date, weekNumberFormat)) +
-          "</div>" +
-          "</td>";
-      }
+      html += "<tr class='fc-week' data-unit='" + unit_id + "'>";
 
       for (col=0; col<colCnt; col++) {
-        date = cellToDate(row, col);
-        html += buildCellHTML(date);
+        date = cellToDate(0, col);
+        html += buildCellHTML(unit, date);
       }
 
       html += "</tr>";
@@ -258,7 +258,7 @@ function ScheduleView(element, calendar, viewName) {
   }
 
 
-  function buildCellHTML(date) {
+  function buildCellHTML(unit, date) {
     var contentClass = tm + "-widget-content";
     var month = t.start.getMonth();
     var today = clearTime(new Date());
@@ -289,12 +289,9 @@ function ScheduleView(element, calendar, viewName) {
       "<td" +
       " class='" + classNames.join(' ') + "'" +
       " data-date='" + formatDate(date, 'yyyy-MM-dd') + "'" +
+      " data-unit='" + unit + "'" +
       ">" +
       "<div>";
-
-    if (showNumbers) {
-      html += "<div class='fc-day-number'>" + date.getDate() + "</div>";
-    }
 
     html +=
       "<div class='fc-day-content'>" +
@@ -320,19 +317,21 @@ function ScheduleView(element, calendar, viewName) {
     var rowHeightLast;
     var cell;
 
-    if (opt('weekMode') == 'variable') {
-      rowHeight = rowHeightLast = Math.floor(bodyHeight / (rowCnt==1 ? 2 : 6));
+    rowHeight = opt('schedRowHeight');
+    if (rowHeight && ((unitCnt-1) * rowHeight < bodyHeight)) {
+      rowHeightLast = bodyHeight - rowHeight * (unitCnt-1);
+      rowHeightLast = rowHeightLast < rowHeight ? rowHeightLast : rowHeight;
     }else{
-      rowHeight = Math.floor(bodyHeight / rowCnt);
-      rowHeightLast = bodyHeight - rowHeight * (rowCnt-1);
+      rowHeight = Math.floor(bodyHeight / unitCnt);
+      rowHeightLast = bodyHeight - rowHeight * (unitCnt-1);
     }
 
     bodyFirstCells.each(function(i, _cell) {
-      if (i < rowCnt) {
+      if (i < unitCnt) {
         cell = $(_cell);
         cell.find('> div').css(
           'min-height',
-          (i==rowCnt-1 ? rowHeightLast : rowHeight) - vsides(cell)
+          (i==unitCnt-1 ? rowHeightLast : rowHeight) - vsides(cell)
         );
       }
     });
@@ -483,7 +482,7 @@ function ScheduleView(element, calendar, viewName) {
     });
     p[1] = n + e.outerWidth();
     bodyRows.each(function(i, _e) {
-      if (i < rowCnt) {
+      if (i < unitCnt) {
         e = $(_e);
         n = e.offset().top;
         if (i) {

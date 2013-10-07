@@ -31,6 +31,7 @@
         "src/agenda/AgendaEventRenderer.js",
         "src/schedule/ScheduleView.js",
         "src/schedule/ScheduleWeekView.js",
+        "src/schedule/ScheduleEventRenderer.js",
         "src/common/View.js",
         "src/common/DayEventRenderer.js",
         "src/common/SelectionManager.js",
