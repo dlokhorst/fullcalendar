@@ -29,6 +29,9 @@
         "src/agenda/AgendaDayView.js",
         "src/agenda/AgendaView.js",
         "src/agenda/AgendaEventRenderer.js",
+        "src/schedule/ScheduleView.js",
+        "src/schedule/ScheduleWeekView.js",
+        "src/schedule/ScheduleEventRenderer.js",
         "src/common/View.js",
         "src/common/DayEventRenderer.js",
         "src/common/SelectionManager.js",
@@ -42,6 +45,7 @@
         "src/main.css",
         "src/common/common.css",
         "src/basic/basic.css",
+        "src/schedule/schedule.css",
         "src/agenda/agenda.css"
       ]
     },
