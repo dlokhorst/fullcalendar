@@ -2,8 +2,8 @@
 
 function View(element, calendar, viewName) {
 	var t = this;
-	
-	
+
+
 	// exports
 	t.element = element;
 	t.calendar = calendar;
@@ -25,22 +25,22 @@ function View(element, calendar, viewName) {
 	// t.title
 	// t.start, t.end
 	// t.visStart, t.visEnd
-	
-	
+
+
 	// imports
 	var defaultEventEnd = t.defaultEventEnd;
 	var normalizeEvent = calendar.normalizeEvent; // in EventManager
 	var reportEventChange = calendar.reportEventChange;
-	
-	
+
+
 	// locals
 	var eventsByID = {}; // eventID mapped to array of events (there can be multiple b/c of repeating events)
 	var eventElementsByID = {}; // eventID mapped to array of jQuery elements
 	var eventElementCouples = []; // array of objects, { event, element } // TODO: unify with segment system
 	var options = calendar.options;
-	
-	
-	
+
+
+
 	function opt(name, viewNameOverride) {
 		var v = options[name];
 		if ($.isPlainObject(v)) {
@@ -49,20 +49,20 @@ function View(element, calendar, viewName) {
 		return v;
 	}
 
-	
+
 	function trigger(name, thisObj) {
 		return calendar.trigger.apply(
 			calendar,
 			[name, thisObj || t].concat(Array.prototype.slice.call(arguments, 2), [t])
 		);
 	}
-	
+
 
 
 	/* Event Editable Boolean Calculations
 	------------------------------------------------------------------------------*/
 
-	
+
 	function isEventDraggable(event) {
 		var source = event.source || {};
 		return firstDefined(
@@ -75,8 +75,8 @@ function View(element, calendar, viewName) {
 			)
 			&& !opt('disableDragging'); // deprecated
 	}
-	
-	
+
+
 	function isEventResizable(event) { // but also need to make sure the seg.isEnd == true
 		var source = event.source || {};
 		return firstDefined(
@@ -89,13 +89,13 @@ function View(element, calendar, viewName) {
 			)
 			&& !opt('disableResizing'); // deprecated
 	}
-	
-	
-	
+
+
+
 	/* Event Data
 	------------------------------------------------------------------------------*/
-	
-	
+
+
 	function setEventData(events) { // events are already normalized at this point
 		eventsByID = {};
 		var i, len=events.length, event;
@@ -115,19 +115,19 @@ function View(element, calendar, viewName) {
 		eventElementsByID = {};
 		eventElementCouples = [];
 	}
-	
-	
+
+
 	// returns a Date object for an event's end
 	function eventEnd(event) {
 		return event.end ? cloneDate(event.end) : defaultEventEnd(event);
 	}
-	
-	
-	
+
+
+
 	/* Event Elements
 	------------------------------------------------------------------------------*/
-	
-	
+
+
 	// report when view creates an element for an event
 	function reportEventElement(event, element) {
 		eventElementCouples.push({ event: event, element: element });
@@ -144,8 +144,8 @@ function View(element, calendar, viewName) {
 			t.trigger('eventDestroy', couple.event, couple.event, couple.element);
 		});
 	}
-	
-	
+
+
 	// attaches eventClick, eventMouseover, eventMouseout
 	function eventElementHandlers(event, eventElement) {
 		eventElement
@@ -166,18 +166,18 @@ function View(element, calendar, viewName) {
 		// TODO: don't fire eventMouseover/eventMouseout *while* dragging is occuring (on subject element)
 		// TODO: same for resizing
 	}
-	
-	
+
+
 	function showEvents(event, exceptElement) {
 		eachEventElement(event, exceptElement, 'show');
 	}
-	
-	
+
+
 	function hideEvents(event, exceptElement) {
 		eachEventElement(event, exceptElement, 'hide');
 	}
-	
-	
+
+
 	function eachEventElement(event, exceptElement, funcName) {
 		// NOTE: there may be multiple events per ID (repeating events)
 		// and multiple segments per event
@@ -189,13 +189,13 @@ function View(element, calendar, viewName) {
 			}
 		}
 	}
-	
-	
-	
+
+
+
 	/* Event Modification Reporting
 	---------------------------------------------------------------------------------*/
-	
-	
+
+
 	function eventDrop(e, event, dayDelta, minuteDelta, allDay, ev, ui) {
 		var oldAllDay = event.allDay;
 		var eventId = event._id;
@@ -217,8 +217,8 @@ function View(element, calendar, viewName) {
 		);
 		reportEventChange(eventId);
 	}
-	
-	
+
+
 	function eventResize(e, event, dayDelta, minuteDelta, ev, ui) {
 		var eventId = event._id;
 		elongateEvents(eventsByID[eventId], dayDelta, minuteDelta);
@@ -238,13 +238,13 @@ function View(element, calendar, viewName) {
 		);
 		reportEventChange(eventId);
 	}
-	
-	
-	
+
+
+
 	/* Event Modification Math
 	---------------------------------------------------------------------------------*/
-	
-	
+
+
 	function moveEvents(events, dayDelta, minuteDelta, allDay) {
 		minuteDelta = minuteDelta || 0;
 		for (var e, len=events.length, i=0; i<len; i++) {
@@ -259,8 +259,8 @@ function View(element, calendar, viewName) {
 			normalizeEvent(e, options);
 		}
 	}
-	
-	
+
+
 	function elongateEvents(events, dayDelta, minuteDelta) {
 		minuteDelta = minuteDelta || 0;
 		for (var e, len=events.length, i=0; i<len; i++) {
@@ -514,7 +514,7 @@ function View(element, calendar, viewName) {
 				var segmentCellLast = cellOffsetToCell(segmentCellOffsetLast);
 
 				// view might be RTL, so order by leftmost column
-				var cols = [ segmentCellFirst.col, segmentCellLast.col ].sort();
+				var cols = [ segmentCellFirst.col, segmentCellLast.col ].sort(function(a,b){return a-b});
 
 				// Determine if segment's first/last cell is the beginning/end of the date range.
 				// We need to compare "day offset" because "cell offsets" are often ambiguous and
@@ -535,6 +535,6 @@ function View(element, calendar, viewName) {
 
 		return segments;
 	}
-	
+
 
 }
