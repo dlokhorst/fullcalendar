@@ -229,7 +229,7 @@ function ScheduleView(element, calendar, viewName) {
     for (unitI = 0; unitI < unitCnt; unitI++) {
 
       html += "<tr class='fc-unit' data-unit='" + units[unitI].id + "'>";
-      html += "<td class='fc-unit-number fc-widget-header'><div>" + unitName(unitI) + "</div></td>";
+      html += "<td class='fc-unit-number fc-widget-header'><div>" + rowLabel(unitI) + "</div></td>";
 
       for (col=0; col<colCnt; col++) {
         date = cellToDate(0, col);
@@ -244,6 +244,13 @@ function ScheduleView(element, calendar, viewName) {
     return html;
   }
 
+  function rowLabel(unitI) {
+    if (typeof(units[unitI].url) === 'undefined') {
+      return unitName(unitI);
+    } else {
+      return "<a href='" + units[unitI].url + "'>" + unitName(unitI) + "</a>";
+    }
+  }
 
   function unitName(unitI) {
     if(units[unitI].name) {
