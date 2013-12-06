@@ -158,6 +158,9 @@ function ScheduleView(element, calendar, viewName) {
     });
 
     dayBind(bodyCells);
+
+    //  also allow click on the column headers
+    dayBind(headCells);
   }
 
 
@@ -206,7 +209,7 @@ function ScheduleView(element, calendar, viewName) {
     for (col=0; col<colCnt; col++) {
       date = cellToDate(0, col);
       html +=
-        "<th class='fc-day-header fc-" + dayIDs[date.getDay()] + " " + headerClass + "'>" +
+        "<th class='fc-day-header fc-" + dayIDs[date.getDay()] + " " + headerClass + "' data-date='" + formatDate(date, 'yyyy-MM-dd') + "'>" +
         htmlEscape(formatDate(date, colFormat)) +
         "</th>";
     }
