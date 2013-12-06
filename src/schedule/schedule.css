@@ -4,8 +4,10 @@
 
 .fc .fc-unit-number {
   text-align: center;
+  padding: 3px 8px;
+  font-weight: bold;
   }
 
 .fc .fc-unit-number div {
-  padding: 0 2px;
+  padding: 0;
   }
